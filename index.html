@@ -1,118 +1,69 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>泡泡食光訂單</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>泡泡食光｜線上訂購單</title>
   <style>
-    body {
-      font-family: "微軟正黑體", sans-serif;
-      background-color: #fefae0;
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-    }
-    .form-box {
-      background: #fff;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 480px;
-    }
-    h2 {
-      text-align: center;
-      color: #ff8a00;
-    }
-    label {
-      margin-top: 10px;
-      display: block;
-      font-weight: bold;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      background: #ffb703;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #fb8500;
-    }
-    #status {
-      margin-top: 20px;
-      text-align: center;
-      font-weight: bold;
-      color: green;
-    }
+    body { font-family: sans-serif; padding: 2em; background: #f5f5f5; }
+    form { max-width: 400px; margin: auto; background: white; padding: 2em; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, select, button { width: 100%; padding: 0.8em; margin-top: 1em; }
+    #message { text-align: center; margin-top: 1em; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div class="form-box">
-    <h2>泡泡食光 訂購表單</h2>
-    <form id="orderForm">
-      <label>姓名</label>
-      <input type="text" name="name" required>
 
-      <label>主食</label>
-      <select name="main" required>
-        <option value="">請選擇主食</option>
-        <option value="米粉">米粉（50元）</option>
-      </select>
+<h2 style="text-align:center;">泡泡食光｜訂購表單</h2>
 
-      <label>副食</label>
-      <select name="side">
-        <option value="">-- 無 --</option>
-        <option value="豆干">豆干（30元）</option>
-        <option value="熱狗">熱狗（20元）</option>
-      </select>
+<form id="orderForm">
+  <label for="name">姓名</label>
+  <input type="text" id="name" required>
 
-      <label>飲料</label>
-      <select name="drink">
-        <option value="">-- 無 --</option>
-        <option value="加檸雪碧">加檸雪碧（40元）</option>
-        <option value="梅子可樂">梅子可樂（40元）</option>
-      </select>
+  <label for="phone">電話</label>
+  <input type="tel" id="phone" required>
 
-      <button type="submit">送出訂單</button>
-    </form>
-    <div id="status"></div>
-  </div>
+  <label for="product">商品</label>
+  <select id="product">
+    <option value="珍奶">珍奶</option>
+    <option value="紅茶">紅茶</option>
+    <option value="抹茶">抹茶</option>
+  </select>
 
-  <script>
-    document.getElementById("orderForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = {};
-      formData.forEach((v, k) => data[k] = v);
+  <button type="submit">送出訂單</button>
+  <div id="message"></div>
+</form>
 
-      fetch("https://script.google.com/macros/s/AKfycbyRGCrMjAXFb_IuT3snSrHYtoMHTdCR6ybfcRctJdM7qZlEmVn8v2gfFSPAq0NnWNQ/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(res => res.text())
-      .then(msg => {
-        document.getElementById("status").innerText = msg;
-        e.target.reset();
-      })
-      .catch(err => {
-        document.getElementById("status").innerText = "❌ 訂單失敗，請稍後再試。";
-        console.error(err);
-      });
+<script>
+  const scriptURL = 'https://script.google.com/a/macros/hlc.edu.tw/s/AKfycbwa4aN5q1H-82-oGqp6oJwo91QTzM-kgRsSN1lCg_4Txb42jEeS0y06gZOJyXH_fsI/exec';
+
+  document.getElementById('orderForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const message = document.getElementById('message');
+    message.textContent = '送出中...';
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        product: document.getElementById('product').value
+      }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.result === 'success') {
+        message.textContent = '✅ 訂單成功！';
+      } else {
+        message.textContent = '❌ 訂單失敗，請稍後再試';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      message.textContent = '❌ 系統錯誤，請稍後再試';
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
