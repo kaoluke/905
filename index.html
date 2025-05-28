@@ -53,12 +53,7 @@
       margin-top: 20px;
       text-align: center;
       font-weight: bold;
-    }
-    #status.success {
       color: green;
-    }
-    #status.error {
-      color: red;
     }
   </style>
 </head>
@@ -108,22 +103,13 @@
           "Content-Type": "application/json"
         }
       })
-      .then(res => res.json())
-      .then(response => {
-        const status = document.getElementById("status");
-        if (response.result === "success") {
-          status.innerText = "✅ 訂單成功，謝謝您的訂購！";
-          status.className = "success";
-          e.target.reset();
-        } else {
-          status.innerText = "❌ 訂單失敗：" + response.message;
-          status.className = "error";
-        }
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById("status").innerText = msg;
+        e.target.reset();
       })
       .catch(err => {
-        const status = document.getElementById("status");
-        status.innerText = "❌ 系統錯誤，請稍後再試。";
-        status.className = "error";
+        document.getElementById("status").innerText = "❌ 系統錯誤，請稍後再試。";
         console.error(err);
       });
     });
