@@ -6,39 +6,39 @@
   <style>
     body {
       font-family: "微軟正黑體", sans-serif;
-      background-color: #fefae0;
+      background-color: #fff9e6;
       display: flex;
       justify-content: center;
       padding: 40px;
+      animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .form-box {
-      background: #ffffff;
+      background: #fff;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 520px;
-      animation: fadeIn 0.5s ease-in;
+      max-width: 500px;
     }
     h2 {
       text-align: center;
-      color: #fb8500;
-      margin-bottom: 20px;
+      color: #ff8a00;
     }
     label {
-      margin-top: 10px;
+      margin-top: 12px;
       display: block;
       font-weight: bold;
-      color: #333;
     }
-    select, input[type="text"], input[type="number"] {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
-      margin-bottom: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 14px;
     }
     .row {
       display: flex;
@@ -49,7 +49,7 @@
     }
     button {
       width: 100%;
-      margin-top: 10px;
+      margin-top: 20px;
       padding: 12px;
       background: #ffb703;
       color: white;
@@ -57,7 +57,7 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background 0.3s;
     }
     button:hover {
       background: #fb8500;
@@ -66,15 +66,12 @@
       margin-top: 20px;
       text-align: center;
       font-weight: bold;
-      color: #2a9d8f;
-      animation: fadeIn 0.5s ease-in;
     }
-    #status.error {
-      color: #e63946;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    #totalPrice {
+      text-align: right;
+      font-size: 18px;
+      margin-top: 10px;
+      color: #4e8c4c;
     }
   </style>
 </head>
@@ -87,44 +84,34 @@
 
       <label>主食</label>
       <div class="row">
-        <div>
-          <select name="main" required>
-            <option value="">請選擇主食</option>
-            <option value="米粉">米粉（50元）</option>
-          </select>
-        </div>
-        <div>
-          <input type="number" name="mainQty" placeholder="數量" min="0" value="1">
-        </div>
+        <select name="main" id="main">
+          <option value="">請選擇主食</option>
+          <option value="米粉">米粉（50元）</option>
+        </select>
+        <input type="number" name="mainQty" id="mainQty" placeholder="數量" min="0" value="0">
       </div>
 
       <label>副食</label>
       <div class="row">
-        <div>
-          <select name="side">
-            <option value="">-- 無 --</option>
-            <option value="豆干">豆干（30元）</option>
-            <option value="熱狗">熱狗（20元）</option>
-          </select>
-        </div>
-        <div>
-          <input type="number" name="sideQty" placeholder="數量" min="0" value="1">
-        </div>
+        <select name="side" id="side">
+          <option value="">-- 無 --</option>
+          <option value="豆干">豆干（30元）</option>
+          <option value="熱狗">熱狗（20元）</option>
+        </select>
+        <input type="number" name="sideQty" id="sideQty" placeholder="數量" min="0" value="0">
       </div>
 
       <label>飲料</label>
       <div class="row">
-        <div>
-          <select name="drink">
-            <option value="">-- 無 --</option>
-            <option value="加檸雪碧">加檸雪碧（40元）</option>
-            <option value="梅子可樂">梅子可樂（40元）</option>
-          </select>
-        </div>
-        <div>
-          <input type="number" name="drinkQty" placeholder="數量" min="0" value="1">
-        </div>
+        <select name="drink" id="drink">
+          <option value="">-- 無 --</option>
+          <option value="加檸雪碧">加檸雪碧（40元）</option>
+          <option value="梅子可樂">梅子可樂（40元）</option>
+        </select>
+        <input type="number" name="drinkQty" id="drinkQty" placeholder="數量" min="0" value="0">
       </div>
+
+      <div id="totalPrice">總價：0 元</div>
 
       <button type="submit">送出訂單</button>
     </form>
@@ -132,36 +119,58 @@
   </div>
 
   <script>
+    const prices = {
+      "米粉": 50,
+      "豆干": 30,
+      "熱狗": 20,
+      "加檸雪碧": 40,
+      "梅子可樂": 40
+    };
+
+    function calculateTotal() {
+      let total = 0;
+      const main = document.getElementById("main").value;
+      const mainQty = parseInt(document.getElementById("mainQty").value || 0);
+      const side = document.getElementById("side").value;
+      const sideQty = parseInt(document.getElementById("sideQty").value || 0);
+      const drink = document.getElementById("drink").value;
+      const drinkQty = parseInt(document.getElementById("drinkQty").value || 0);
+
+      if (prices[main]) total += prices[main] * mainQty;
+      if (prices[side]) total += prices[side] * sideQty;
+      if (prices[drink]) total += prices[drink] * drinkQty;
+
+      document.getElementById("totalPrice").innerText = `總價：${total} 元`;
+      return total;
+    }
+
+    document.querySelectorAll("select, input[type='number']").forEach(el => {
+      el.addEventListener("input", calculateTotal);
+    });
+
     document.getElementById("orderForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      const formData = new FormData(e.target);
+      const form = e.target;
+      const formData = new FormData(form);
       const data = {};
       formData.forEach((v, k) => data[k] = v);
+      data.total = calculateTotal();
 
-      fetch("https://script.google.com/macros/s/AKfycbwf8DmZHfP9ox2b7Uz7nhw4_WX-w0E_ycqMQyIi_J1GgGMs2cCYap9GM4vENgylRzXp/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbxyD1fLlDzEqHDKlf65rdtAi55eu8hJt5GqKNo2Mvl2RXXgmfdd4jMjdOWGJqgLO5A/exec", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" }
       })
       .then(res => res.text())
       .then(msg => {
-        const status = document.getElementById("status");
-        status.className = "";
-        if (msg.includes("✅")) {
-          status.textContent = "✅ 訂單送出成功！謝謝您的訂購！";
-          e.target.reset();
-        } else {
-          status.textContent = msg;
-          status.classList.add("error");
-        }
+        document.getElementById("status").innerText = msg;
+        document.getElementById("status").style.color = msg.includes("✅") ? "green" : "red";
+        form.reset();
+        calculateTotal();
       })
-      .catch(err => {
-        const status = document.getElementById("status");
-        status.textContent = "❌ 系統錯誤，請稍後再試。";
-        status.classList.add("error");
-        console.error(err);
+      .catch(() => {
+        document.getElementById("status").innerText = "❌ 系統錯誤，請稍後再試。";
+        document.getElementById("status").style.color = "red";
       });
     });
   </script>
