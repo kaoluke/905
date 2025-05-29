@@ -12,50 +12,44 @@
       padding: 40px;
     }
     .form-box {
-      background: #fff;
+      background: #ffffff;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
+      animation: fadeIn 0.5s ease-in;
     }
     h2 {
       text-align: center;
-      color: #ff8a00;
+      color: #fb8500;
+      margin-bottom: 20px;
     }
     label {
-      margin-top: 15px;
+      margin-top: 10px;
       display: block;
       font-weight: bold;
+      color: #333;
     }
-    .item-control {
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .row {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
+      gap: 10px;
     }
-    .item-control span {
+    .row > div {
       flex: 1;
     }
-    .item-control input {
-      width: 60px;
-      text-align: center;
-      font-size: 16px;
-    }
-    .item-control button {
-      width: 32px;
-      height: 32px;
-      font-size: 20px;
-      font-weight: bold;
-      border: none;
-      background-color: #ccc;
-      color: #333;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button.submit {
+    button {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 12px;
       background: #ffb703;
       color: white;
@@ -63,15 +57,24 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-    button.submit:hover {
+    button:hover {
       background: #fb8500;
     }
     #status {
       margin-top: 20px;
       text-align: center;
       font-weight: bold;
-      color: green;
+      color: #2a9d8f;
+      animation: fadeIn 0.5s ease-in;
+    }
+    #status.error {
+      color: #e63946;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -82,73 +85,82 @@
       <label>姓名</label>
       <input type="text" name="name" required>
 
-      <label>主食（米粉 50元）</label>
-      <div class="item-control">
-        <span>米粉</span>
-        <button type="button" onclick="changeQty('mainQty', -1)">-</button>
-        <input type="number" name="mainQty" id="mainQty" value="0" min="0">
-        <button type="button" onclick="changeQty('mainQty', 1)">+</button>
+      <label>主食</label>
+      <div class="row">
+        <div>
+          <select name="main" required>
+            <option value="">請選擇主食</option>
+            <option value="米粉">米粉（50元）</option>
+          </select>
+        </div>
+        <div>
+          <input type="number" name="mainQty" placeholder="數量" min="0" value="1">
+        </div>
       </div>
 
       <label>副食</label>
-      <div class="item-control">
-        <span>豆干（30元）</span>
-        <button type="button" onclick="changeQty('side1Qty', -1)">-</button>
-        <input type="number" name="side1Qty" id="side1Qty" value="0" min="0">
-        <button type="button" onclick="changeQty('side1Qty', 1)">+</button>
-      </div>
-      <div class="item-control">
-        <span>熱狗（20元）</span>
-        <button type="button" onclick="changeQty('side2Qty', -1)">-</button>
-        <input type="number" name="side2Qty" id="side2Qty" value="0" min="0">
-        <button type="button" onclick="changeQty('side2Qty', 1)">+</button>
+      <div class="row">
+        <div>
+          <select name="side">
+            <option value="">-- 無 --</option>
+            <option value="豆干">豆干（30元）</option>
+            <option value="熱狗">熱狗（20元）</option>
+          </select>
+        </div>
+        <div>
+          <input type="number" name="sideQty" placeholder="數量" min="0" value="1">
+        </div>
       </div>
 
       <label>飲料</label>
-      <div class="item-control">
-        <span>加檸雪碧（40元）</span>
-        <button type="button" onclick="changeQty('drink1Qty', -1)">-</button>
-        <input type="number" name="drink1Qty" id="drink1Qty" value="0" min="0">
-        <button type="button" onclick="changeQty('drink1Qty', 1)">+</button>
-      </div>
-      <div class="item-control">
-        <span>梅子可樂（40元）</span>
-        <button type="button" onclick="changeQty('drink2Qty', -1)">-</button>
-        <input type="number" name="drink2Qty" id="drink2Qty" value="0" min="0">
-        <button type="button" onclick="changeQty('drink2Qty', 1)">+</button>
+      <div class="row">
+        <div>
+          <select name="drink">
+            <option value="">-- 無 --</option>
+            <option value="加檸雪碧">加檸雪碧（40元）</option>
+            <option value="梅子可樂">梅子可樂（40元）</option>
+          </select>
+        </div>
+        <div>
+          <input type="number" name="drinkQty" placeholder="數量" min="0" value="1">
+        </div>
       </div>
 
-      <button type="submit" class="submit">送出訂單</button>
+      <button type="submit">送出訂單</button>
     </form>
     <div id="status"></div>
   </div>
 
   <script>
-    function changeQty(id, diff) {
-      const input = document.getElementById(id);
-      let val = parseInt(input.value) || 0;
-      val = Math.max(0, val + diff);
-      input.value = val;
-    }
-
     document.getElementById("orderForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
       const data = {};
       formData.forEach((v, k) => data[k] = v);
 
-      fetch("YOUR_DEPLOYED_URL", {
+      fetch("https://script.google.com/macros/s/AKfycbwf8DmZHfP9ox2b7Uz7nhw4_WX-w0E_ycqMQyIi_J1GgGMs2cCYap9GM4vENgylRzXp/exec", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
+        headers: {
+          "Content-Type": "application/json"
+        }
       })
       .then(res => res.text())
       .then(msg => {
-        document.getElementById("status").innerText = msg;
-        e.target.reset();
+        const status = document.getElementById("status");
+        status.className = "";
+        if (msg.includes("✅")) {
+          status.textContent = "✅ 訂單送出成功！謝謝您的訂購！";
+          e.target.reset();
+        } else {
+          status.textContent = msg;
+          status.classList.add("error");
+        }
       })
       .catch(err => {
-        document.getElementById("status").innerText = "❌ 訂單失敗，請稍後再試。";
+        const status = document.getElementById("status");
+        status.textContent = "❌ 系統錯誤，請稍後再試。";
+        status.classList.add("error");
         console.error(err);
       });
     });
