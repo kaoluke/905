@@ -2,31 +2,108 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>泡泡食光訂單</title>
+  <title>泡泡食光 訂購表單</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWfzmulutWwX9XZd__ZJJDH9ajq1rVYVM",
+      authDomain: "times-a3946.firebaseapp.com",
+      databaseURL: "https://times-a3946-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "times-a3946",
+      storageBucket: "times-a3946.appspot.com",
+      messagingSenderId: "168824083063",
+      appId: "1:168824083063:web:123a72d9aa61ed62d5ec72"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.submitOrder = async function () {
+      const name = document.querySelector('[name="name"]').value.trim();
+      const main = document.querySelector('[name="main"]').value;
+      const side = document.querySelector('[name="side"]').value;
+      const drink = document.querySelector('[name="drink"]').value;
+
+      const mainQty = parseInt(document.querySelector('[name="mainQty"]').value) || 0;
+      const sideQty = parseInt(document.querySelector('[name="sideQty"]').value) || 0;
+      const drinkQty = parseInt(document.querySelector('[name="drinkQty"]').value) || 0;
+
+      if (!name || !main || mainQty <= 0) {
+        showStatus("❗ 請填寫姓名並選擇主食與數量", "red");
+        return;
+      }
+
+      const total = calculateTotal(main, side, drink, mainQty, sideQty, drinkQty);
+
+      try {
+        const orderRef = push(ref(db, "orders"));
+        await set(orderRef, {
+          name,
+          main, mainQty,
+          side, sideQty,
+          drink, drinkQty,
+          total,
+          timestamp: new Date().toISOString()
+        });
+
+        showStatus("✅ 訂單已送出！", "green");
+        document.getElementById("orderForm").reset();
+        updateTotal();
+      } catch (err) {
+        console.error(err);
+        showStatus("❌ 發生錯誤，請稍後再試。", "red");
+      }
+    };
+
+    function calculateTotal(main, side, drink, mainQty, sideQty, drinkQty) {
+      let total = 0;
+      if (main === "米粉") total += 50 * mainQty;
+      if (side === "豆干") total += 30 * sideQty;
+      else if (side === "熱狗") total += 20 * sideQty;
+      if (drink === "加檸雪碧" || drink === "梅子可樂") total += 40 * drinkQty;
+      return total;
+    }
+
+    window.updateTotal = function () {
+      const main = document.querySelector('[name="main"]').value;
+      const side = document.querySelector('[name="side"]').value;
+      const drink = document.querySelector('[name="drink"]').value;
+      const mainQty = parseInt(document.querySelector('[name="mainQty"]').value) || 0;
+      const sideQty = parseInt(document.querySelector('[name="sideQty"]').value) || 0;
+      const drinkQty = parseInt(document.querySelector('[name="drinkQty"]').value) || 0;
+
+      const total = calculateTotal(main, side, drink, mainQty, sideQty, drinkQty);
+      document.getElementById("total").innerText = `總金額：${total} 元`;
+    };
+
+    function showStatus(msg, color) {
+      const el = document.getElementById("status");
+      el.innerText = msg;
+      el.style.color = color;
+    }
+  </script>
+
   <style>
     body {
       font-family: "微軟正黑體", sans-serif;
-      background-color: #fff9e6;
+      background-color: #fdfcdc;
       display: flex;
       justify-content: center;
       padding: 40px;
-      animation: fadeIn 1s ease-in;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     .form-box {
       background: #fff;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 500px;
     }
     h2 {
       text-align: center;
-      color: #ff8a00;
+      color: #ff8c00;
     }
     label {
       margin-top: 12px;
@@ -35,7 +112,7 @@
     }
     input, select {
       width: 100%;
-      padding: 10px;
+      padding: 8px;
       margin-top: 5px;
       border-radius: 8px;
       border: 1px solid #ccc;
@@ -57,122 +134,64 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
     }
     button:hover {
       background: #fb8500;
     }
     #status {
-      margin-top: 20px;
+      margin-top: 15px;
       text-align: center;
       font-weight: bold;
     }
-    #totalPrice {
-      text-align: right;
+    #total {
+      text-align: center;
       font-size: 18px;
       margin-top: 10px;
-      color: #4e8c4c;
+      color: #4b4b4b;
     }
   </style>
 </head>
+
 <body>
   <div class="form-box">
     <h2>泡泡食光 訂購表單</h2>
-    <form id="orderForm">
+    <form id="orderForm" onsubmit="event.preventDefault(); submitOrder();">
       <label>姓名</label>
       <input type="text" name="name" required>
 
       <label>主食</label>
       <div class="row">
-        <select name="main" id="main">
+        <div><select name="main" onchange="updateTotal()" required>
           <option value="">請選擇主食</option>
           <option value="米粉">米粉（50元）</option>
-        </select>
-        <input type="number" name="mainQty" id="mainQty" placeholder="數量" min="0" value="0">
+        </select></div>
+        <div><input type="number" name="mainQty" min="1" value="1" onchange="updateTotal()" placeholder="數量"></div>
       </div>
 
       <label>副食</label>
       <div class="row">
-        <select name="side" id="side">
+        <div><select name="side" onchange="updateTotal()">
           <option value="">-- 無 --</option>
           <option value="豆干">豆干（30元）</option>
           <option value="熱狗">熱狗（20元）</option>
-        </select>
-        <input type="number" name="sideQty" id="sideQty" placeholder="數量" min="0" value="0">
+        </select></div>
+        <div><input type="number" name="sideQty" min="0" value="0" onchange="updateTotal()" placeholder="數量"></div>
       </div>
 
       <label>飲料</label>
       <div class="row">
-        <select name="drink" id="drink">
+        <div><select name="drink" onchange="updateTotal()">
           <option value="">-- 無 --</option>
           <option value="加檸雪碧">加檸雪碧（40元）</option>
           <option value="梅子可樂">梅子可樂（40元）</option>
-        </select>
-        <input type="number" name="drinkQty" id="drinkQty" placeholder="數量" min="0" value="0">
+        </select></div>
+        <div><input type="number" name="drinkQty" min="0" value="0" onchange="updateTotal()" placeholder="數量"></div>
       </div>
 
-      <div id="totalPrice">總價：0 元</div>
-
+      <div id="total">總金額：0 元</div>
       <button type="submit">送出訂單</button>
     </form>
     <div id="status"></div>
   </div>
-
-  <script>
-    const prices = {
-      "米粉": 50,
-      "豆干": 30,
-      "熱狗": 20,
-      "加檸雪碧": 40,
-      "梅子可樂": 40
-    };
-
-    function calculateTotal() {
-      let total = 0;
-      const main = document.getElementById("main").value;
-      const mainQty = parseInt(document.getElementById("mainQty").value || 0);
-      const side = document.getElementById("side").value;
-      const sideQty = parseInt(document.getElementById("sideQty").value || 0);
-      const drink = document.getElementById("drink").value;
-      const drinkQty = parseInt(document.getElementById("drinkQty").value || 0);
-
-      if (prices[main]) total += prices[main] * mainQty;
-      if (prices[side]) total += prices[side] * sideQty;
-      if (prices[drink]) total += prices[drink] * drinkQty;
-
-      document.getElementById("totalPrice").innerText = `總價：${total} 元`;
-      return total;
-    }
-
-    document.querySelectorAll("select, input[type='number']").forEach(el => {
-      el.addEventListener("input", calculateTotal);
-    });
-
-    document.getElementById("orderForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const formData = new FormData(form);
-      const data = {};
-      formData.forEach((v, k) => data[k] = v);
-      data.total = calculateTotal();
-
-      fetch("https://script.google.com/macros/s/AKfycbxyD1fLlDzEqHDKlf65rdtAi55eu8hJt5GqKNo2Mvl2RXXgmfdd4jMjdOWGJqgLO5A/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
-      })
-      .then(res => res.text())
-      .then(msg => {
-        document.getElementById("status").innerText = msg;
-        document.getElementById("status").style.color = msg.includes("✅") ? "green" : "red";
-        form.reset();
-        calculateTotal();
-      })
-      .catch(() => {
-        document.getElementById("status").innerText = "❌ 系統錯誤，請稍後再試。";
-        document.getElementById("status").style.color = "red";
-      });
-    });
-  </script>
 </body>
 </html>
