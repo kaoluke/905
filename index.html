@@ -23,6 +23,10 @@
       width: 90%;
       max-width: 400px;
       text-align: left;
+      transition: transform 0.2s;
+    }
+    .form-group:hover {
+      transform: scale(1.02);
     }
     label {
       font-weight: bold;
@@ -35,6 +39,11 @@
       font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #ccc;
+      transition: all 0.3s;
+    }
+    input[type="number"]:focus, select:focus, input[type="text"]:focus {
+      border-color: #ff9f1c;
+      box-shadow: 0 0 5px rgba(255, 159, 28, 0.5);
     }
     button {
       background-color: #ff9f1c;
@@ -45,16 +54,20 @@
       color: white;
       cursor: pointer;
       margin-top: 1rem;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
     button:hover {
       background-color: #ff8c00;
+      transform: scale(1.05);
     }
-    #total {
+    #total, #discounted {
       font-size: 1.2rem;
       margin-top: 1rem;
       color: #d44;
       font-weight: bold;
+    }
+    #discounted {
+      color: green;
     }
     .message {
       margin-top: 1rem;
@@ -96,7 +109,8 @@
     數量：<input type="number" id="drinkQty" min="0" value="0" />
   </div>
 
-  <div id="total">總金額：0 元</div>
+  <div id="total">原價：0 元</div>
+  <div id="discounted">折扣後價格：0 元</div>
   <div class="message" id="message"></div>
 
   <button onclick="submitOrder()">送出訂單</button>
@@ -126,12 +140,22 @@
       const drinkQty = parseInt(document.getElementById("drinkQty").value) || 0;
 
       let total = mainQty * prices.main + sideQty * prices.side + drinkQty * prices.drink;
+      let discounted = total;
 
-      document.getElementById("total").textContent = `總金額：${total} 元`;
-      return total;
+      if (mainQty > 0 && sideQty > 0 && drinkQty > 0) discounted -= 10;
+
+      const now = new Date();
+      const deadline = new Date("2025-06-04T23:59:59");
+      if (now < deadline) discounted -= 10;
+
+      if (discounted < 0) discounted = 0;
+
+      document.getElementById("total").textContent = `原價：${total} 元`;
+      document.getElementById("discounted").textContent = `折扣後價格：${discounted} 元`;
+      return { total, discounted };
     }
 
-    document.querySelectorAll("input").forEach(el => el.addEventListener("input", calculateTotal));
+    document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculateTotal));
 
     function submitOrder() {
       const name = document.getElementById("name").value.trim();
@@ -141,7 +165,7 @@
       const sideQty = parseInt(document.getElementById("sideQty").value) || 0;
       const drink = document.getElementById("drink").value;
       const drinkQty = parseInt(document.getElementById("drinkQty").value) || 0;
-      const total = calculateTotal();
+      const { total, discounted } = calculateTotal();
 
       if (!name) {
         document.getElementById("message").textContent = "❗ 請填寫姓名";
@@ -157,6 +181,7 @@
         drink,
         drinkQty,
         total,
+        discounted,
         time: new Date().toISOString()
       }, error => {
         document.getElementById("message").textContent = error ? "❌ 訂單送出失敗" : "✅ 訂單已成功送出！";
