@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -12,80 +11,128 @@
     body {
       background: #fffaf0;
       font-family: 'Noto Sans TC', sans-serif;
-      text-align: center;
       padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h1 {
       font-size: 2rem;
       margin-bottom: 1rem;
     }
     .form-group {
-      margin: 1rem auto;
-      width: 90%;
+      margin-bottom: 1.5rem;
+      width: 100%;
       max-width: 400px;
-      text-align: left;
     }
     label {
       font-weight: bold;
       display: block;
       margin-bottom: 0.5rem;
     }
-    select, input[type="text"] {
+    input[type="text"] {
       width: 100%;
       padding: 0.5rem;
-      font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 1rem;
     }
+
+    .form-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      max-width: 800px;
+    }
+
+    .card {
+      background: #fff;
+      border: 2px solid #ffa726;
+      border-radius: 16px;
+      padding: 1rem;
+      width: 180px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card.full-width {
+      width: 100%;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+
     .qty-control {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
     }
+
     .qty-control button {
       background-color: #ffa726;
       border: none;
-      padding: 0.5rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 6px;
       font-size: 1rem;
       color: white;
       cursor: pointer;
       transition: transform 0.2s ease;
     }
+
     .qty-control button:active {
       transform: scale(1.2);
     }
+
     input[type="number"] {
-      width: 60px;
+      width: 50px;
       text-align: center;
+      font-size: 1rem;
+      padding: 0.3rem;
     }
-    button.submit {
+
+    .submit {
       background-color: #fb8c00;
       border: none;
-      padding: 0.7rem 1.5rem;
+      padding: 0.8rem 1.5rem;
       border-radius: 8px;
       font-size: 1rem;
       color: white;
       cursor: pointer;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       transition: background 0.3s;
     }
-    button.submit:hover {
+
+    .submit:hover {
       background-color: #ef6c00;
     }
+
     #price-display {
       margin-top: 1rem;
       font-size: 1.1rem;
+      text-align: center;
     }
+
     .before {
       color: #888;
       text-decoration: line-through;
     }
+
     .after {
       color: #d32f2f;
       font-weight: bold;
       font-size: 1.3rem;
     }
+
     .popup {
       position: fixed;
       top: 50%;
@@ -100,6 +147,12 @@
       display: none;
       animation: fadeIn 0.5s ease-in-out;
     }
+
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
     @keyframes fadeIn {
       from {opacity: 0; transform: translate(-50%, -60%);}
       to {opacity: 1; transform: translate(-50%, -50%);}
@@ -115,45 +168,51 @@
     <input type="text" id="name" placeholder="請輸入姓名" />
   </div>
 
-  <div class="form-group">
-    <label>主食（50元）</label>
-    <div class="qty-control">
-      <button onclick="adjustQty('main_fried', -1)">-</button>
-      <input type="number" id="main_fried" min="0" value="0" />
-      <span>米粉</span>
-      <button onclick="adjustQty('main_fried', 1)">+</button>
+  <div class="form-container">
+    <!-- 主食 -->
+    <div class="card full-width">
+      <h3>米粉（50元）</h3>
+      <div class="qty-control">
+        <button onclick="adjustQty('main_fried', -1)">-</button>
+        <input type="number" id="main_fried" min="0" value="0"/>
+        <button onclick="adjustQty('main_fried', 1)">+</button>
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <label>副食（20元）</label>
-    <div class="qty-control">
-      <button onclick="adjustQty('side_tofu', -1)">-</button>
-      <input type="number" id="side_tofu" min="0" value="0" />
-      <span>豆干</span>
-      <button onclick="adjustQty('side_tofu', 1)">+</button>
+    <!-- 飲料 -->
+    <div class="card">
+      <h3>梅子可樂（40元）</h3>
+      <div class="qty-control">
+        <button onclick="adjustQty('drink_coke', -1)">-</button>
+        <input type="number" id="drink_coke" min="0" value="0"/>
+        <button onclick="adjustQty('drink_coke', 1)">+</button>
+      </div>
     </div>
-    <div class="qty-control">
-      <button onclick="adjustQty('side_hotdog', -1)">-</button>
-      <input type="number" id="side_hotdog" min="0" value="0" />
-      <span>熱狗</span>
-      <button onclick="adjustQty('side_hotdog', 1)">+</button>
+    <div class="card">
+      <h3>加檸雪碧（40元）</h3>
+      <div class="qty-control">
+        <button onclick="adjustQty('drink_sprite', -1)">-</button>
+        <input type="number" id="drink_sprite" min="0" value="0"/>
+        <button onclick="adjustQty('drink_sprite', 1)">+</button>
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <label>飲料（40元）</label>
-    <div class="qty-control">
-      <button onclick="adjustQty('drink_sprite', -1)">-</button>
-      <input type="number" id="drink_sprite" min="0" value="0" />
-      <span>雪碧</span>
-      <button onclick="adjustQty('drink_sprite', 1)">+</button>
+    <!-- 副食 -->
+    <div class="card">
+      <h3>豆干（20元）</h3>
+      <div class="qty-control">
+        <button onclick="adjustQty('side_tofu', -1)">-</button>
+        <input type="number" id="side_tofu" min="0" value="0"/>
+        <button onclick="adjustQty('side_tofu', 1)">+</button>
+      </div>
     </div>
-    <div class="qty-control">
-      <button onclick="adjustQty('drink_coke', -1)">-</button>
-      <input type="number" id="drink_coke" min="0" value="0" />
-      <span>可樂</span>
-      <button onclick="adjustQty('drink_coke', 1)">+</button>
+    <div class="card">
+      <h3>熱狗(4支/份)（20元）</h3>
+      <div class="qty-control">
+        <button onclick="adjustQty('side_hotdog', -1)">-</button>
+        <input type="number" id="side_hotdog" min="0" value="0"/>
+        <button onclick="adjustQty('side_hotdog', 1)">+</button>
+      </div>
     </div>
   </div>
 
@@ -165,6 +224,7 @@
   <button class="submit" onclick="submitOrder()">送出訂單</button>
 
   <div class="popup" id="popup">✅ 訂單已成功送出！</div>
+  <div class="popup" id="popup-alert">⚠️ 請填寫姓名或檢查庫存</div>
 
   <script>
     const firebaseConfig = {
@@ -192,7 +252,7 @@
       let val = parseInt(input.value) || 0;
       val = Math.max(0, val + delta);
       if (stock[id] !== undefined && val > stock[id]) {
-        alert("⚠️ 此品項庫存不足");
+        showAlert("⚠️ 此品項庫存不足");
         return;
       }
       input.value = val;
@@ -224,13 +284,13 @@
 
     function submitOrder() {
       const name = document.getElementById("name").value.trim();
-      if (!name) return alert("❗ 請填寫姓名");
+      if (!name) return showAlert("❗ 請填寫姓名");
 
       const order = { name, time: new Date().toISOString(), total: calculateTotal() };
       for (let id in prices) {
         const qty = parseInt(document.getElementById(id).value) || 0;
         if (stock[id] !== undefined && qty > stock[id]) {
-          alert("⚠️ 原料不足，請重新調整");
+          showAlert("⚠️ 原料不足，請重新調整");
           return;
         }
         order[id] = qty;
@@ -240,9 +300,9 @@
       db.ref("orders").push(order, (err) => {
         if (!err) {
           document.getElementById("popup").style.display = "block";
-          setTimeout(() => { location.reload(); }, 2000);
+          setTimeout(() => location.reload(), 2000);
         } else {
-          alert("❌ 訂單送出失敗！");
+          showAlert("❌ 訂單送出失敗！");
         }
       });
     }
@@ -260,6 +320,13 @@
         }
         calculateTotal();
       });
+    }
+
+    function showAlert(msg) {
+      const popup = document.getElementById("popup-alert");
+      popup.textContent = msg;
+      popup.style.display = "block";
+      setTimeout(() => popup.style.display = "none", 2500);
     }
 
     window.onload = () => {
