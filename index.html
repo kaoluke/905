@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>泡泡食光訂購單</title>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #fffaf0;
+      font-family: 'Noto Sans TC', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      margin: 1rem auto;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .qty-control button {
+      background-color: #ffa726;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .qty-control button:active {
+      transform: scale(1.2);
+    }
+    input[type="number"] {
+      width: 60px;
+      text-align: center;
+    }
+    button.submit {
+      background-color: #fb8c00;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.3s;
+    }
+    button.submit:hover {
+      background-color: #ef6c00;
+    }
+    #price-display {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+    .before {
+      color: #888;
+      text-decoration: line-through;
+    }
+    .after {
+      color: #d32f2f;
+      font-weight: bold;
+      font-size: 1.3rem;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border: 2px solid #ffa726;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      z-index: 999;
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translate(-50%, -60%);}
+      to {opacity: 1; transform: translate(-50%, -50%);}
+    }
+  </style>
+</head>
+<body>
+
+  <h1>泡泡食光 - 訂購單</h1>
+
+  <div class="form-group">
+    <label for="name">姓名</label>
+    <input type="text" id="name" placeholder="請輸入姓名" />
+  </div>
+
+  <div class="form-group">
+    <label>主食（50元）</label>
+    <div class="qty-control">
+      <button onclick="adjustQty('main_fried', -1)">-</button>
+      <input type="number" id="main_fried" min="0" value="0" />
+      <span>米粉</span>
+      <button onclick="adjustQty('main_fried', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>副食（20元）</label>
+    <div class="qty-control">
+      <button onclick="adjustQty('side_tofu', -1)">-</button>
+      <input type="number" id="side_tofu" min="0" value="0" />
+      <span>豆干</span>
+      <button onclick="adjustQty('side_tofu', 1)">+</button>
+    </div>
+    <div class="qty-control">
+      <button onclick="adjustQty('side_hotdog', -1)">-</button>
+      <input type="number" id="side_hotdog" min="0" value="0" />
+      <span>熱狗</span>
+      <button onclick="adjustQty('side_hotdog', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>飲料（40元）</label>
+    <div class="qty-control">
+      <button onclick="adjustQty('drink_sprite', -1)">-</button>
+      <input type="number" id="drink_sprite" min="0" value="0" />
+      <span>雪碧</span>
+      <button onclick="adjustQty('drink_sprite', 1)">+</button>
+    </div>
+    <div class="qty-control">
+      <button onclick="adjustQty('drink_coke', -1)">-</button>
+      <input type="number" id="drink_coke" min="0" value="0" />
+      <span>可樂</span>
+      <button onclick="adjustQty('drink_coke', 1)">+</button>
+    </div>
+  </div>
+
+  <div id="price-display">
+    <div class="before" id="priceBefore">原價：0 元</div>
+    <div class="after" id="priceAfter">優惠後：0 元</div>
+  </div>
+
+  <button class="submit" onclick="submitOrder()">送出訂單</button>
+
+  <div class="popup" id="popup">✅ 訂單已成功送出！</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWfzmulutWwX9XZd__ZJJDH9ajq1rVYVM",
+      authDomain: "times-a3946.firebaseapp.com",
+      databaseURL: "https://times-a3946-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "times-a3946",
+      storageBucket: "times-a3946.appspot.com",
+      messagingSenderId: "168824083063",
+      appId: "1:168824083063:web:123a72d9aa61ed62d5ec72"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const prices = {
+      main_fried: 50,
+      side_tofu: 20,
+      side_hotdog: 20,
+      drink_sprite: 40,
+      drink_coke: 40,
+    };
+    const stock = {};
+
+    function adjustQty(id, delta) {
+      const input = document.getElementById(id);
+      let val = parseInt(input.value) || 0;
+      val = Math.max(0, val + delta);
+      if (stock[id] !== undefined && val > stock[id]) {
+        alert("⚠️ 此品項庫存不足");
+        return;
+      }
+      input.value = val;
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      let total = 0, beforeDiscount = 0;
+      let hasMain = false, hasSide = false, hasDrink = false;
+
+      Object.keys(prices).forEach(id => {
+        const qty = parseInt(document.getElementById(id).value) || 0;
+        beforeDiscount += prices[id] * qty;
+        total += prices[id] * qty;
+        if (id.startsWith("main") && qty > 0) hasMain = true;
+        if (id.startsWith("side") && qty > 0) hasSide = true;
+        if (id.startsWith("drink") && qty > 0) hasDrink = true;
+      });
+
+      const now = new Date();
+      if (hasMain && hasSide && hasDrink) total -= 10;
+      if (now < new Date("2025-06-04")) total -= 10;
+      total = Math.max(total, 0);
+
+      document.getElementById("priceBefore").textContent = `原價：${beforeDiscount} 元`;
+      document.getElementById("priceAfter").textContent = `優惠後：${total} 元`;
+      return total;
+    }
+
+    function submitOrder() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("❗ 請填寫姓名");
+
+      const order = { name, time: new Date().toISOString(), total: calculateTotal() };
+      for (let id in prices) {
+        const qty = parseInt(document.getElementById(id).value) || 0;
+        if (stock[id] !== undefined && qty > stock[id]) {
+          alert("⚠️ 原料不足，請重新調整");
+          return;
+        }
+        order[id] = qty;
+        stock[id] -= qty;
+        db.ref("stock/" + id).set(stock[id]);
+      }
+      db.ref("orders").push(order, (err) => {
+        if (!err) {
+          document.getElementById("popup").style.display = "block";
+          setTimeout(() => { location.reload(); }, 2000);
+        } else {
+          alert("❌ 訂單送出失敗！");
+        }
+      });
+    }
+
+    function fetchStock() {
+      db.ref("stock").on("value", snap => {
+        const data = snap.val() || {};
+        Object.assign(stock, data);
+        for (let id in stock) {
+          const input = document.getElementById(id);
+          if (input) {
+            input.max = stock[id];
+            if (stock[id] <= 0) input.disabled = true;
+          }
+        }
+        calculateTotal();
+      });
+    }
+
+    window.onload = () => {
+      fetchStock();
+      document.querySelectorAll("input").forEach(el => el.addEventListener("input", calculateTotal));
+    };
+  </script>
+</body>
+</html>
