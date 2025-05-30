@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>泡泡食光預購表單</title>
+  <title>泡泡食光訂購單</title>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
   <style>
     body {
-      background: #fff7ed;
+      background: #fffaf0;
       font-family: 'Noto Sans TC', sans-serif;
       text-align: center;
       padding: 2rem;
@@ -23,30 +23,43 @@
       width: 90%;
       max-width: 400px;
       text-align: left;
-      transition: transform 0.2s;
-    }
-    .form-group:hover {
-      transform: scale(1.02);
     }
     label {
       font-weight: bold;
       display: block;
       margin-bottom: 0.5rem;
     }
-    select, input[type="text"], input[type="number"] {
+    select, input[type="text"] {
       width: 100%;
       padding: 0.5rem;
       font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #ccc;
-      transition: all 0.3s;
     }
-    input[type="number"]:focus, select:focus, input[type="text"]:focus {
-      border-color: #ff9f1c;
-      box-shadow: 0 0 5px rgba(255, 159, 28, 0.5);
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    button {
-      background-color: #ff9f1c;
+    .qty-control button {
+      background-color: #ffa726;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .qty-control button:active {
+      transform: scale(1.2);
+    }
+    input[type="number"] {
+      width: 60px;
+      text-align: center;
+    }
+    button.submit {
+      background-color: #fb8c00;
       border: none;
       padding: 0.7rem 1.5rem;
       border-radius: 8px;
@@ -54,28 +67,46 @@
       color: white;
       cursor: pointer;
       margin-top: 1rem;
-      transition: background 0.3s, transform 0.2s;
+      transition: background 0.3s;
     }
-    button:hover {
-      background-color: #ff8c00;
-      transform: scale(1.05);
+    button.submit:hover {
+      background-color: #ef6c00;
     }
-    #total, #discounted {
-      font-size: 1.2rem;
+    #price-display {
       margin-top: 1rem;
-      color: #d44;
-      font-weight: bold;
+      font-size: 1.1rem;
     }
-    #discounted {
-      color: green;
+    .before {
+      color: #888;
+      text-decoration: line-through;
     }
-    .message {
-      margin-top: 1rem;
+    .after {
+      color: #d32f2f;
       font-weight: bold;
+      font-size: 1.3rem;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border: 2px solid #ffa726;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      z-index: 999;
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translate(-50%, -60%);}
+      to {opacity: 1; transform: translate(-50%, -50%);}
     }
   </style>
 </head>
 <body>
+
   <h1>泡泡食光 - 訂購單</h1>
 
   <div class="form-group">
@@ -88,7 +119,11 @@
     <select id="main">
       <option value="炒米粉">炒米粉</option>
     </select>
-    數量：<input type="number" id="mainQty" min="0" value="0" />
+    <div class="qty-control">
+      <button onclick="adjustQty('mainQty', -1)">-</button>
+      <input type="number" id="mainQty" min="0" value="0" />
+      <button onclick="adjustQty('mainQty', 1)">+</button>
+    </div>
   </div>
 
   <div class="form-group">
@@ -97,7 +132,11 @@
       <option value="豆干">豆干</option>
       <option value="熱狗">熱狗（4支/份）</option>
     </select>
-    數量：<input type="number" id="sideQty" min="0" value="0" />
+    <div class="qty-control">
+      <button onclick="adjustQty('sideQty', -1)">-</button>
+      <input type="number" id="sideQty" min="0" value="0" />
+      <button onclick="adjustQty('sideQty', 1)">+</button>
+    </div>
   </div>
 
   <div class="form-group">
@@ -106,14 +145,21 @@
       <option value="加檸雪碧">加檸雪碧</option>
       <option value="梅子可樂">梅子可樂</option>
     </select>
-    數量：<input type="number" id="drinkQty" min="0" value="0" />
+    <div class="qty-control">
+      <button onclick="adjustQty('drinkQty', -1)">-</button>
+      <input type="number" id="drinkQty" min="0" value="0" />
+      <button onclick="adjustQty('drinkQty', 1)">+</button>
+    </div>
   </div>
 
-  <div id="total">原價：0 元</div>
-  <div id="discounted">折扣後價格：0 元</div>
-  <div class="message" id="message"></div>
+  <div id="price-display">
+    <div class="before" id="priceBefore">原價：0 元</div>
+    <div class="after" id="priceAfter">優惠後：0 元</div>
+  </div>
 
-  <button onclick="submitOrder()">送出訂單</button>
+  <button class="submit" onclick="submitOrder()">送出訂單</button>
+
+  <div class="popup" id="popup">✅ 訂單已成功送出！</div>
 
   <script>
     const firebaseConfig = {
@@ -128,65 +174,68 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const prices = {
-      main: 50,
-      side: 20,
-      drink: 40
-    };
+    const prices = { main: 50, side: 20, drink: 40 };
 
-    function calculateTotal() {
-      const mainQty = parseInt(document.getElementById("mainQty").value) || 0;
-      const sideQty = parseInt(document.getElementById("sideQty").value) || 0;
-      const drinkQty = parseInt(document.getElementById("drinkQty").value) || 0;
-
-      let total = mainQty * prices.main + sideQty * prices.side + drinkQty * prices.drink;
-      let discounted = total;
-
-      if (mainQty > 0 && sideQty > 0 && drinkQty > 0) discounted -= 10;
-
-      const now = new Date();
-      const deadline = new Date("2025-06-04T23:59:59");
-      if (now < deadline) discounted -= 10;
-
-      if (discounted < 0) discounted = 0;
-
-      document.getElementById("total").textContent = `原價：${total} 元`;
-      document.getElementById("discounted").textContent = `折扣後價格：${discounted} 元`;
-      return { total, discounted };
+    function adjustQty(id, delta) {
+      const input = document.getElementById(id);
+      let val = parseInt(input.value) || 0;
+      val = Math.max(0, val + delta);
+      input.value = val;
+      calculateTotal();
     }
 
-    document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculateTotal));
+    function calculateTotal() {
+      const m = parseInt(document.getElementById("mainQty").value) || 0;
+      const s = parseInt(document.getElementById("sideQty").value) || 0;
+      const d = parseInt(document.getElementById("drinkQty").value) || 0;
+      let total = m * prices.main + s * prices.side + d * prices.drink;
+      const beforeDiscount = total;
+
+      const now = new Date();
+      const beforeJune4 = now < new Date("2025-06-04");
+      if (beforeJune4) total -= 10;
+      if (m > 0 && s > 0 && d > 0) total -= 10;
+      total = Math.max(total, 0);
+
+      document.getElementById("priceBefore").textContent = `原價：${beforeDiscount} 元`;
+      document.getElementById("priceAfter").textContent = `優惠後：${total} 元`;
+
+      return total;
+    }
 
     function submitOrder() {
       const name = document.getElementById("name").value.trim();
       const main = document.getElementById("main").value;
-      const mainQty = parseInt(document.getElementById("mainQty").value) || 0;
       const side = document.getElementById("side").value;
-      const sideQty = parseInt(document.getElementById("sideQty").value) || 0;
       const drink = document.getElementById("drink").value;
+      const mainQty = parseInt(document.getElementById("mainQty").value) || 0;
+      const sideQty = parseInt(document.getElementById("sideQty").value) || 0;
       const drinkQty = parseInt(document.getElementById("drinkQty").value) || 0;
-      const { total, discounted } = calculateTotal();
+      const total = calculateTotal();
 
       if (!name) {
-        document.getElementById("message").textContent = "❗ 請填寫姓名";
+        alert("❗ 請填寫姓名");
         return;
       }
 
       db.ref("orders").push({
-        name,
-        main,
-        mainQty,
-        side,
-        sideQty,
-        drink,
-        drinkQty,
-        total,
-        discounted,
-        time: new Date().toISOString()
-      }, error => {
-        document.getElementById("message").textContent = error ? "❌ 訂單送出失敗" : "✅ 訂單已成功送出！";
+        name, main, side, drink,
+        mainQty, sideQty, drinkQty,
+        total, time: new Date().toISOString()
+      }, (err) => {
+        if (!err) {
+          document.getElementById("popup").style.display = "block";
+          setTimeout(() => {
+            document.getElementById("popup").style.display = "none";
+          }, 2000);
+        } else {
+          alert("❌ 訂單送出失敗！");
+        }
       });
     }
+
+    document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculateTotal));
+    window.onload = calculateTotal;
   </script>
 </body>
 </html>
