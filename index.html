@@ -212,7 +212,7 @@
 
   <button class="submit" onclick="submitOrder()">送出訂單</button>
 
-  <div class="popup" id="popup">✅ 訂單已成功送出！</div>
+  <div class="popup" id="popup">✅ 送出成功~ 在過來拿喔</div>
 
   <script>
     const firebaseConfig = {
@@ -242,7 +242,7 @@
       let val = parseInt(input.value) || 0;
       val = Math.max(0, val + delta);
       if (stock[id] !== undefined && val > stock[id]) {
-        showPopup("⚠️ 此品項庫存不足");
+        showPopup("⚠️ 修但幾勒~補貨中");
         return;
       }
       input.value = val;
@@ -299,7 +299,7 @@
 
       db.ref("orders").push(order, (err) => {
         if (!err) {
-          showPopup("✅ 訂單已成功送出！");
+          showPopup("✅ 送出成功~ 在過來拿喔");
           setTimeout(() => location.reload(), 2000);
         } else {
           showPopup("❌ 訂單送出失敗！");
